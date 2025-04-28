@@ -24,6 +24,8 @@ class AlertActivity : AppCompatActivity() {
         val incomingNumber = intent.getStringExtra("PHONE_NUMBER") ?: "Número desconocido"
         val riskLevel = intent.getStringExtra("RISK_LEVEL") ?: "unknown"
 
+
+
         val layout = findViewById<LinearLayout>(R.id.alertLayout)
         val textView = findViewById<TextView>(R.id.textViewAlert)
 
