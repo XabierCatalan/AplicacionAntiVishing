@@ -7,6 +7,7 @@ import android.telephony.TelephonyManager
 import android.app.KeyguardManager
 import android.os.Handler
 import android.util.Log
+import com.example.aplicacionantivishing.manager.CallAnalyzer
 import com.example.aplicacionantivishing.ui.AlertActivity
 
 class CallReceiver : BroadcastReceiver() {
@@ -98,10 +99,7 @@ class CallReceiver : BroadcastReceiver() {
     private fun launchAlert(context: Context, incomingNumber: String?) {
 
         alertLaunched = true
-        val riskLevel = when {
-            incomingNumber.isNullOrEmpty() -> "dangerous" // Número oculto
-            else -> "suspicious" // Número visible, de momento sospechoso
-        }
+        val riskLevel = CallAnalyzer.analyzeNumber(context, incomingNumber)
 
         val intent = Intent(context, AlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
