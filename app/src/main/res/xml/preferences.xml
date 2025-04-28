@@ -1,0 +1,49 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Listas de Prefijos">
+
+        <EditTextPreference
+            android:key="blacklist_prefixes"
+            android:title="Prefijos en Lista Negra"
+            android:summary="Edita prefijos separados por comas (ej: +373,+91)" />
+
+        <EditTextPreference
+            android:key="whitelist_prefixes"
+            android:title="Prefijos en Lista Blanca"
+            android:summary="Edita prefijos separados por comas (ej: +44,+39)" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Pesos del Algoritmo (Con Internet)">
+
+        <EditTextPreference
+            android:key="weight_suspicious_name_internet"
+            android:title="Penalización por Nombre Sospechoso"
+            android:summary="Valor negativo (-70 por defecto)" />
+
+        <EditTextPreference
+            android:key="weight_reported_internet"
+            android:title="Penalización por Reporte OSINT"
+            android:summary="Valor negativo (-50 por defecto)" />
+
+        <EditTextPreference
+            android:key="weight_verified_internet"
+            android:title="Bonus por Verificación OSINT"
+            android:summary="Valor positivo (+15 por defecto)" />
+
+        <!-- Más pesos aquí si quieres (internacional, contactos, etc) -->
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Otros Ajustes">
+
+        <SwitchPreferenceCompat
+            android:key="show_alert"
+            android:title="Mostrar alerta en pantalla"
+            android:summary="Si desactivas, solo se analizará la llamada" />
+
+        <Preference
+            android:key="reset_weights"
+            android:title="Restaurar pesos por defecto"
+            android:summary="Volver a valores originales del algoritmo" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
