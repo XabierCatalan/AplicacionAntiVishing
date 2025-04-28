@@ -1,8 +1,7 @@
 package com.example.aplicacionantivishing.manager
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.preference.PreferenceManager
 
 object CallAnalyzer {
 
@@ -13,14 +12,20 @@ object CallAnalyzer {
 
         var confidence = 100
 
-        val hasInternet = isInternetAvailable(context)
+        val hasInternet = InternetManager.isInternetAvailable(context)
 
-        if (isPrefixInBlacklist(phoneNumber)) confidence -= 90
+        if (isPrefixInBlacklist(context, phoneNumber)) confidence -= 90
         if (contactNameIsSuspicious(context, phoneNumber)) confidence -= if (hasInternet) 70 else 80
         if (hasInternet && isNumberReportedInOsint(phoneNumber)) confidence -= 50
         if (hasInternet && isNumberVerifiedInOsint(phoneNumber)) confidence += 15
         if (!isSavedInContacts(context, phoneNumber)) confidence -= if (hasInternet) 10 else 20
-        if (isInternationalCall(phoneNumber) && !isPrefixInBlacklist(phoneNumber)) confidence -= if (hasInternet) 30 else 40
+
+        if (isInternationalCall(phoneNumber)
+            && !isPrefixInBlacklist(context, phoneNumber)
+            && !isPrefixInWhitelist(context, phoneNumber)) {
+            confidence -= if (hasInternet) 30 else 40
+        }
+
         if (isFirstTimeCalling(context, phoneNumber)) confidence -= if (hasInternet) 10 else 20
         if (isSavedInContacts(context, phoneNumber)) confidence += if (hasInternet) 10 else 20
         if (hasCalledBefore(context, phoneNumber)) confidence += 10
@@ -37,16 +42,18 @@ object CallAnalyzer {
         }
     }
 
-    private fun isInternetAvailable(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    private fun isPrefixInBlacklist(context: Context, phoneNumber: String): Boolean {
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val blacklist = sharedPrefs.getStringSet("blacklist_prefixes", emptySet()) ?: emptySet()
+
+        return blacklist.any { prefix -> phoneNumber.startsWith(prefix) }
     }
 
-    private fun isPrefixInBlacklist(phoneNumber: String): Boolean {
-        // TODO: Comprobar si el prefijo está en la lista negra
-        return false
+    private fun isPrefixInWhitelist(context: Context, phoneNumber: String): Boolean {
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val whitelist = sharedPrefs.getStringSet("whitelist_prefixes", emptySet()) ?: emptySet()
+
+        return whitelist.any { prefix -> phoneNumber.startsWith(prefix) }
     }
 
     private fun contactNameIsSuspicious(context: Context, phoneNumber: String): Boolean {
@@ -70,8 +77,10 @@ object CallAnalyzer {
     }
 
     private fun isInternationalCall(phoneNumber: String): Boolean {
-        // TODO: Analizar si es una llamada internacional
-        return false
+        val nationalPrefix = "+34" // Asumimos España por ahora
+
+        // Si empieza por el prefijo nacional, no es internacional
+        return !phoneNumber.startsWith(nationalPrefix)
     }
 
     private fun isFirstTimeCalling(context: Context, phoneNumber: String): Boolean {
@@ -80,12 +89,12 @@ object CallAnalyzer {
     }
 
     private fun hasCalledBefore(context: Context, phoneNumber: String): Boolean {
-        // TODO: Comprobar historial de llamadas
+        // TODO: Consultar historial de llamadas
         return false
     }
 
     private fun isNationalPrefix(phoneNumber: String): Boolean {
-        // TODO: Comprobar si el prefijo es nacional (España)
+        // TODO: Comprobar si el prefijo es nacional
         return false
     }
 }
