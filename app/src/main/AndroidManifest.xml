@@ -23,6 +23,8 @@
             android:turnScreenOn="true"
             android:exported="true" />
 
+        <activity android:name=".ui.SettingsActivity" />
+
         <activity android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
