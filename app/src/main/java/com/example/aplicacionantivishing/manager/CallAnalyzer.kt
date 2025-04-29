@@ -30,10 +30,7 @@ object CallAnalyzer {
             confidence -= 50
             Log.d("CallAnalyzer", "Número reportado en OSINT ➔ -50 ➔ Confianza ahora: $confidence%")
         }
-        if (hasInternet && isNumberVerifiedInOsint(phoneNumber)) {
-            confidence += 15
-            Log.d("CallAnalyzer", "Número verificado en OSINT ➔ +15 ➔ Confianza ahora: $confidence%")
-        }
+
         if (!isSavedInContacts(context, phoneNumber)) {
             val penalty = if (hasInternet) 10 else 20
             confidence -= penalty
@@ -56,11 +53,6 @@ object CallAnalyzer {
             val penalty = if (hasInternet) 10 else 20
             confidence -= penalty
             Log.d("CallAnalyzer", "Primera vez que llama ➔ -$penalty ➔ Confianza ahora: $confidence%")
-        }
-
-        if (hasCalledBefore(context, phoneNumber)) {
-            confidence += 10
-            Log.d("CallAnalyzer", "Ha llamado antes ➔ +10 ➔ Confianza ahora: $confidence%")
         }
 
         if (isNationalPrefix(phoneNumber)) {
@@ -107,14 +99,15 @@ object CallAnalyzer {
     }
 
     private fun isNumberReportedInOsint(phoneNumber: String): Boolean {
-        // TODO: Consultar bases de datos de spam online
-        return false
+        val reportedNumbers = listOf(
+            "+34600111222", // ⚠️ Número ficticio marcado como spam
+            "+34911888777"
+        )
+
+        return reportedNumbers.any { spam -> phoneNumber.contains(spam) }
     }
 
-    private fun isNumberVerifiedInOsint(phoneNumber: String): Boolean {
-        // TODO: Consultar si el número está verificado como seguro en OSINT
-        return false
-    }
+
 
     private fun isSavedInContacts(context: Context, phoneNumber: String): Boolean {
         val contentResolver = context.contentResolver
@@ -147,14 +140,14 @@ object CallAnalyzer {
     }
 
     private fun isFirstTimeCalling(context: Context, phoneNumber: String): Boolean {
-        // TODO: Comprobar si es la primera vez que llama
-        return false
+        val sharedPrefs = context.getSharedPreferences("call_history", Context.MODE_PRIVATE)
+        val historySet = sharedPrefs.getStringSet("history", emptySet()) ?: return true
+
+        return historySet.none { entry ->
+            entry.contains("|$phoneNumber|")
+        }
     }
 
-    private fun hasCalledBefore(context: Context, phoneNumber: String): Boolean {
-        // TODO: Consultar historial de llamadas
-        return false
-    }
 
     private fun isNationalPrefix(phoneNumber: String): Boolean {
         val nationalPrefix = "+34"
