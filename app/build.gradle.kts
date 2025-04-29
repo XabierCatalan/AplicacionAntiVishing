@@ -36,6 +36,9 @@ android {
 }
 
 dependencies {
+    implementation("com.squareup.okhttp3:okhttp-urlconnection:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jsoup:jsoup:1.16.1")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation(libs.androidx.core.ktx)
     implementation("androidx.appcompat:appcompat:1.6.1")

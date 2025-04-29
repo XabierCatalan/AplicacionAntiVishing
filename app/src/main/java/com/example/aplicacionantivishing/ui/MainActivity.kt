@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.aplicacionantivishing.R
 import com.example.aplicacionantivishing.adapter.CallHistoryAdapter
 import com.example.aplicacionantivishing.adapter.CallHistoryEntry
+import com.example.aplicacionantivishing.manager.CallAnalyzer
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,7 +45,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         cargarHistorial()
+        simulateReportedIncomingCall()
+
     }
+
+    private fun simulateReportedIncomingCall() {
+        val fakePhoneNumber: String = "639025863" // 📱 Aquí pon un número que sepamos que esté reportado en Teledigo o ListaSpam
+        val fakeContactName: String? = null // 👤 No está en agenda
+
+        // Analizamos como si fuese una llamada real
+        val riskLevel = CallAnalyzer.analyzeNumber(this, fakePhoneNumber, fakeContactName)
+
+        val sharedPrefs = getSharedPreferences("call_history", Context.MODE_PRIVATE)
+        val editor = sharedPrefs.edit()
+        val existingHistory = sharedPrefs.getStringSet("history", mutableSetOf()) ?: mutableSetOf()
+
+        val timestamp = System.currentTimeMillis()
+        val newEntry = "$timestamp|$fakePhoneNumber|$riskLevel"
+
+        existingHistory.add(newEntry)
+
+        editor.putStringSet("history", existingHistory)
+        editor.apply()
+
+        val intent = Intent(this, AlertActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra("PHONE_NUMBER", fakePhoneNumber)
+            putExtra("CONTACT_NAME", fakeContactName ?: "Desconocido")
+            putExtra("RISK_LEVEL", riskLevel)
+        }
+        startActivity(intent)
+
+        Log.d("MainActivity", "Simulación de llamada de número reportado: $fakePhoneNumber ➔ Nivel: $riskLevel")
+    }
+
 
     private fun cargarHistorial() {
         callHistoryList.clear()

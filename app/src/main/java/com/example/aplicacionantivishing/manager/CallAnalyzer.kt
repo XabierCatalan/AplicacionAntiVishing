@@ -3,6 +3,8 @@ package com.example.aplicacionantivishing.manager
 import android.content.Context
 import android.preference.PreferenceManager
 import android.util.Log
+import com.example.aplicacionantivishing.network.OsintChecker
+import kotlinx.coroutines.runBlocking
 
 object CallAnalyzer {
 
@@ -99,12 +101,15 @@ object CallAnalyzer {
     }
 
     private fun isNumberReportedInOsint(phoneNumber: String): Boolean {
-        val reportedNumbers = listOf(
-            "+34600111222", // ⚠️ Número ficticio marcado como spam
-            "+34911888777"
-        )
-
-        return reportedNumbers.any { spam -> phoneNumber.contains(spam) }
+        return runBlocking {
+            if (OsintChecker.isReportedInTeledigo(phoneNumber)) {
+                Log.d("CallAnalyzer", "Número encontrado en Teledigo")
+                true
+            } else {
+                Log.d("CallAnalyzer", "Número NO encontrado en OSINT")
+                false
+            }
+        }
     }
 
 
