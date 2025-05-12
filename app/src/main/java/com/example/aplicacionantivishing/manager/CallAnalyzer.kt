@@ -93,51 +93,59 @@ object CallAnalyzer {
 
         val penaltySuspiciousName = SettingsManager.getPenaltySuspiciousName(context, hasInternet)
         val penaltyInternational = SettingsManager.getPenaltyInternationalCall(context, hasInternet)
+        val penaltyOsint = SettingsManager.getPenaltyOsint(context)
         val penaltyFirstCall = SettingsManager.getPenaltyFirstCall(context, hasInternet)
-        val bonusVerifiedContact = SettingsManager.getBonusVerifiedContact(context, hasInternet)
+        val bonusSavedContact = SettingsManager.getBonusSavedContact(context, hasInternet)
+        val penaltyNotSavedContact = SettingsManager.getPenaltyNotSavedContact(context, hasInternet)
         val bonusNationalCall = SettingsManager.getBonusNationalCall(context, hasInternet)
+        val blacklistPenalty = SettingsManager.getBlacklistPenalty(context)
 
         if (isPrefixInBlacklist(context, phoneNumber)) {
-            confidence -= 90
-            Log.d("CallAnalyzer", "Prefijo en blacklist ➔ -90 ➔ Confianza ahora: $confidence%")
+            confidence += blacklistPenalty
+            Log.d("CallAnalyzer", "Prefijo en blacklist ➔ -$blacklistPenalty ➔ Confianza ahora: $confidence%")
         }
         if (contactNameIsSuspicious(contactName)) {
-            val penalty = if (hasInternet) 70 else 80
-            confidence -= penalty
-            Log.d("CallAnalyzer", "Nombre sospechoso ➔ -$penalty ➔ Confianza ahora: $confidence%")
+            confidence += penaltySuspiciousName
+            Log.d("CallAnalyzer", "Nombre sospechoso ➔ -$penaltySuspiciousName ➔ Confianza ahora: $confidence%")
         }
-        if (hasInternet && isNumberReportedInOsint(context, phoneNumber)) {
-            confidence -= 50
-            Log.d("CallAnalyzer", "Número reportado en OSINT ➔ -50 ➔ Confianza ahora: $confidence%")
+
+        //if (hasInternet && isNumberReportedInOsint(context, phoneNumber)) {
+        //    confidence -= 50
+        //    Log.d("CallAnalyzer", "Número reportado en OSINT ➔ -50 ➔ Confianza ahora: $confidence%")
+        //}
+
+        if (hasInternet) {
+            if (isNumberReportedInOsint(context, phoneNumber)) {
+                confidence += penaltyOsint
+                Log.d("CallAnalyzer", "Número reportado en OSINT ➔ $penaltyOsint ➔ Confianza ahora: $confidence%")
+            }
+        } else {
+            Log.d("CallAnalyzer", "No hay internet, no se miran las listas Osint")
         }
 
         if (!isSavedInContacts(context, phoneNumber)) {
-            val penalty = if (hasInternet) 10 else 20
-            confidence -= penalty
-            Log.d("CallAnalyzer", "Número NO en contactos ➔ -$penalty ➔ Confianza ahora: $confidence%")
+            confidence += penaltyNotSavedContact
+            Log.d("CallAnalyzer", "Número NO en contactos ➔ $penaltyNotSavedContact ➔ Confianza ahora: $confidence%")
         } else {
-            val bonus = if (hasInternet) 10 else 20
-            confidence += bonus
-            Log.d("CallAnalyzer", "Número en contactos ➔ +$bonus ➔ Confianza ahora: $confidence%")
+            confidence += bonusSavedContact
+            Log.d("CallAnalyzer", "Número en contactos ➔ +$bonusSavedContact ➔ Confianza ahora: $confidence%")
         }
 
         if (isInternationalCall(phoneNumber)
             && !isPrefixInBlacklist(context, phoneNumber)
             && !isPrefixInWhitelist(context, phoneNumber)) {
-            val penalty = if (hasInternet) 30 else 40
-            confidence -= penalty
-            Log.d("CallAnalyzer", "Llamada internacional (no blacklist, no whitelist) ➔ -$penalty ➔ Confianza ahora: $confidence%")
+            confidence += penaltyInternational
+            Log.d("CallAnalyzer", "Llamada internacional (no blacklist, no whitelist) ➔ $penaltyInternational ➔ Confianza ahora: $confidence%")
         }
 
         if (isFirstTimeCalling(context, phoneNumber)) {
-            val penalty = if (hasInternet) 10 else 20
-            confidence -= penalty
-            Log.d("CallAnalyzer", "Primera vez que llama ➔ -$penalty ➔ Confianza ahora: $confidence%")
+            confidence += penaltyFirstCall
+            Log.d("CallAnalyzer", "Primera vez que llama ➔ $penaltyFirstCall ➔ Confianza ahora: $confidence%")
         }
 
         if (isNationalPrefix(context, phoneNumber)) {
-            confidence += 5
-            Log.d("CallAnalyzer", "Prefijo nacional ➔ +5 ➔ Confianza ahora: $confidence%")
+            confidence += bonusNationalCall
+            Log.d("CallAnalyzer", "Prefijo nacional ➔ +$bonusNationalCall ➔ Confianza ahora: $confidence%")
         }
 
         clearSimPrefix()
