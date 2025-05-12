@@ -105,6 +105,9 @@ object CallAnalyzer {
             if (OsintChecker.isReportedInTeledigo(phoneNumber)) {
                 Log.d("CallAnalyzer", "Número encontrado en Teledigo")
                 true
+            } else if (OsintChecker.isReportedInListaSpam(phoneNumber)) {
+                Log.d("CallAnalyzer", "Número encontrado en ListaSpam")
+                true
             } else {
                 Log.d("CallAnalyzer", "Número NO encontrado en OSINT")
                 false

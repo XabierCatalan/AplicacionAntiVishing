@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun simulateReportedIncomingCall() {
-        val fakePhoneNumber: String = "639025863" // 📱 Aquí pon un número que sepamos que esté reportado en Teledigo o ListaSpam
+        val fakePhoneNumber: String = "919897641" // 📱 Aquí pon un número que sepamos que esté reportado en Teledigo o ListaSpam
         val fakeContactName: String? = null // 👤 No está en agenda
 
         // Analizamos como si fuese una llamada real

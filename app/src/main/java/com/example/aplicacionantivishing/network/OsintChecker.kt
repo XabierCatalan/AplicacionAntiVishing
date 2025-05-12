@@ -27,7 +27,7 @@ object OsintChecker {
      *  – cabecera Accept-Encoding para que Teledigo no devuelva 403 si falta
      */
     private val httpClient = OkHttpClient.Builder()
-        .callTimeout(10, TimeUnit.SECONDS)
+        .callTimeout(20, TimeUnit.SECONDS)
         .build()
 
     /* ----------------------------  TELEDIGO  ---------------------------- */
@@ -77,4 +77,70 @@ object OsintChecker {
 
             return@withContext (hasForm && realComments.isNotEmpty())
         }
+
+    suspend fun isReportedInListaSpam(phoneNumber: String): Boolean =
+        withContext(Dispatchers.IO) {
+
+            val TAG = "OsintChecker"
+            val num = phoneNumber.trim()                         // sin +34, solo dígitos
+
+            /* ---------- 1) WARM-UP (cookies Cloudflare) ------------------- */
+            val warm = Request.Builder()
+                .url("https://www.listaspam.com/")
+                .header("User-Agent", UA)
+                .header("Accept", "text/html")
+                .header("Accept-Language", "es-ES,es;q=0.9")
+                .get()
+                .build()
+
+            try {
+                httpClient.newCall(warm).execute().use { w ->
+                    Log.d(TAG, "ListaSpam ▸ warm-up HTTP ${w.code}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "ListaSpam ▸ warm-up error: ${e.localizedMessage}")
+                return@withContext false
+            }
+
+            /* ---------- 2) PETICIÓN REAL ---------------------------------- */
+            val queryUrl =
+                "https://www.listaspam.com/busca.php?Telefono=${URLEncoder.encode(num, "UTF-8")}"
+
+            Log.d(TAG, "ListaSpam ▸ URL = $queryUrl")
+
+            val req = Request.Builder()
+                .url(queryUrl)
+                .header("User-Agent", UA)
+                .header("Accept", "text/html,application/xhtml+xml")
+                .header("Accept-Language", "es-ES,es;q=0.9")
+                .header("Referer", "https://www.listaspam.com/")
+                .header("Cache-Control", "no-cache")
+                .get()
+                .build()
+
+            return@withContext try {
+                httpClient.newCall(req).execute().use { resp ->
+                    Log.d(TAG, "ListaSpam ▸ HTTP ${resp.code}")
+
+                    if (resp.code != 200) return@withContext false
+
+                    val html = resp.body?.string().orEmpty()
+                    Log.d(TAG, "ListaSpam ▸ bytes = ${html.length}")
+
+                    /* 3) Parser: <div class="n_reports"><span class="result">N</span> */
+                    val doc   = Jsoup.parse(html)
+                    val span  = doc.selectFirst("div.n_reports span.result")
+                    val count = span?.text()?.trim()?.toIntOrNull() ?: 0
+
+                    Log.d(TAG, "ListaSpam ▸ denuncias = $count")
+
+                    count > 0
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "ListaSpam ▸ error: ${e.localizedMessage}")
+                false
+            }
+        }
+    private const val UA =
+        "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.6562.1943 Mobile Safari/537.36"
 }
