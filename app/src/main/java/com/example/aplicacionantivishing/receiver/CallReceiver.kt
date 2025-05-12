@@ -1,175 +1,159 @@
 package com.example.aplicacionantivishing.receiver
 
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.telephony.TelephonyManager
-import android.app.KeyguardManager
 import android.os.Handler
 import android.provider.ContactsContract
+import android.telephony.TelephonyManager
 import android.util.Log
 import com.example.aplicacionantivishing.manager.CallAnalyzer
 import com.example.aplicacionantivishing.manager.SettingsManager
 import com.example.aplicacionantivishing.ui.AlertActivity
+import com.example.aplicacionantivishing.util.CallHistoryUtils
 
 class CallReceiver : BroadcastReceiver() {
 
     companion object {
         private var lastIncomingNumber: String? = null
-        private var lastIncomingName: String? = null
-        private var callInProgress = false
+        private var lastIncomingName  : String? = null
+        private var callInProgress    = false
         private var shouldLaunchAfterCall = false
-        private var isWaitingForNumber = false
-        private var alertLaunched = false
+        private var isWaitingForNumber   = false
+        private var alertLaunched        = false
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent == null) return
+        Log.d("CallReceiver", "▶ onReceive  intent=$intent  ctx=$context")
 
-        val action = intent.action
-        if (action != null && action == TelephonyManager.ACTION_PHONE_STATE_CHANGED) {
-            val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
-            val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
+        if (intent?.action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) {
+            Log.d("CallReceiver", "No es PHONE_STATE → return")
+            return
+        }
 
-            Log.d("CallReceiver", "Acción: $action, Estado: $state, Número: $incomingNumber")
+        val stateStr       = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+        val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
+        Log.d("CallReceiver", "Estado=$stateStr  Número=$incomingNumber")
 
-            when (state) {
-                TelephonyManager.EXTRA_STATE_RINGING -> {
-                    callInProgress = true
+        when (stateStr) {
 
-                    if (!incomingNumber.isNullOrEmpty()) {
-                        lastIncomingNumber = incomingNumber
-                        lastIncomingName = getContactName(context, incomingNumber) // 🔥 Aquí capturamos el nombre
-                        isWaitingForNumber = false
+            TelephonyManager.EXTRA_STATE_RINGING -> {
+                callInProgress = true
+                Log.d("CallReceiver", "📞 RINGING")
 
-                        context?.let { ctx ->
-                            val keyguardManager = ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-                            val isLocked = keyguardManager.isKeyguardLocked
+                if (!incomingNumber.isNullOrEmpty()) {
+                    lastIncomingNumber = incomingNumber
+                    lastIncomingName   = getContactName(context, incomingNumber)
+                    Log.d("CallReceiver", "Número capturado=$lastIncomingNumber  nombre=$lastIncomingName")
+                    isWaitingForNumber = false
 
-                            if (!isLocked) {
-                                launchAlert(ctx, lastIncomingNumber, lastIncomingName)
-                            } else {
-                                shouldLaunchAfterCall = true
-                            }
-                        }
-                    } else {
-                        if (!isWaitingForNumber) {
-                            isWaitingForNumber = true
-                            Handler().postDelayed({
-                                if (isWaitingForNumber && (lastIncomingNumber.isNullOrEmpty())) {
-                                    context?.let { ctx ->
-                                        val keyguardManager = ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-                                        val isLocked = keyguardManager.isKeyguardLocked
-
-                                        if (!isLocked) {
-                                            launchAlert(ctx, null, null)
-                                        } else {
-                                            shouldLaunchAfterCall = true
-                                        }
-                                    }
+                    context?.let { ctx ->
+                        val isLocked = (ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isKeyguardLocked
+                        Log.d("CallReceiver", "Pantalla bloqueada=$isLocked")
+                        if (!isLocked) launchAlert(ctx, lastIncomingNumber, lastIncomingName)
+                        else           shouldLaunchAfterCall = true
+                    }
+                } else {
+                    Log.d("CallReceiver", "Número es null/empty: esperando medio segundo")
+                    if (!isWaitingForNumber) {
+                        isWaitingForNumber = true
+                        Handler().postDelayed({
+                            if (isWaitingForNumber && lastIncomingNumber.isNullOrEmpty()) {
+                                Log.d("CallReceiver", "Tras espera, nº sigue vacío → lanzar alerta anónima")
+                                context?.let { ctx ->
+                                    val isLocked = (ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isKeyguardLocked
+                                    if (!isLocked) launchAlert(ctx, null, null)
+                                    else           shouldLaunchAfterCall = true
                                 }
-                            }, 500) // 🔥 Esperamos solo medio segundo
-                        }
+                            }
+                        }, 500)
                     }
                 }
+            }
 
-                TelephonyManager.EXTRA_STATE_IDLE -> {
-                    if (callInProgress) {
-                        context?.let { ctx ->
-                            if (!alertLaunched) {
-                                if (lastIncomingNumber.isNullOrEmpty()) {
+            TelephonyManager.EXTRA_STATE_IDLE -> {
+                Log.d("CallReceiver", "☎️ IDLE  callInProgress=$callInProgress")
+                if (callInProgress) {
+                    context?.let { ctx ->
+                        if (!alertLaunched) {
+                            when {
+                                lastIncomingNumber.isNullOrEmpty() -> {
+                                    Log.d("CallReceiver", "Al colgar, nº vacío → alerta anónima")
                                     launchAlert(ctx, null, null)
-                                } else if (shouldLaunchAfterCall) {
+                                }
+                                shouldLaunchAfterCall -> {
+                                    Log.d("CallReceiver", "Al colgar, lanzamos alerta diferida")
                                     launchAlert(ctx, lastIncomingNumber, lastIncomingName)
                                 }
+                                else -> Log.d("CallReceiver", "Al colgar, alerta ya lanzada en RINGING")
                             }
                         }
-                        callInProgress = false
-                        shouldLaunchAfterCall = false
-                        isWaitingForNumber = false
-                        alertLaunched = false
-                        lastIncomingNumber = null
-                        lastIncomingName = null
                     }
+                    // reset
+                    callInProgress        = false
+                    shouldLaunchAfterCall = false
+                    isWaitingForNumber    = false
+                    alertLaunched         = false
+                    lastIncomingNumber    = null
+                    lastIncomingName      = null
+                    Log.d("CallReceiver", "Flags reseteados")
                 }
-
-                else -> { /* Ignoramos otros estados */ }
             }
+
+            else -> Log.d("CallReceiver", "Estado no manejado: $stateStr")
         }
     }
 
-    private fun saveCallToHistory(context: Context, phoneNumber: String, riskLevel: String) {
-        val sharedPrefs = context.getSharedPreferences("call_history", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
+    /* ───────────── ALERTA + HISTORIAL ───────────── */
+    private fun launchAlert(ctx: Context,
+                            incomingNumber: String?,
+                            contactName:    String?) {
 
-        // Guardamos en una lista simulada como String (muy simple por ahora)
-        val existingHistory = sharedPrefs.getStringSet("history", mutableSetOf()) ?: mutableSetOf()
-
-        val timestamp = System.currentTimeMillis()
-        val newEntry = "$timestamp|$phoneNumber|$riskLevel"
-
-        existingHistory.add(newEntry)
-
-        editor.putStringSet("history", existingHistory)
-        editor.apply()
-    }
-
-    private fun launchAlert(
-        context: Context,
-        incomingNumber: String?,
-        contactName:    String?
-    ) {
         alertLaunched = true
+        Log.d("CallReceiver", "→ launchAlert  num=$incomingNumber  name=$contactName")
 
-        /* 1) normaliza número ------------------------------------------------ */
         val number = if (incomingNumber != null && !incomingNumber.startsWith("+"))
-            "+34$incomingNumber"
-        else incomingNumber
+            "+34$incomingNumber" else incomingNumber
+        Log.d("CallReceiver", "Número normalizado=$number")
 
-        /* 2) analiza y guarda ------------------------------------------------ */
-        val risk = CallAnalyzer.analyzeNumber(context, number, contactName)
-        saveCallToHistory(context, number ?: "desconocido", risk)
+        val risk = CallAnalyzer.analyzeNumber(ctx, number, contactName)
+        Log.d("CallReceiver", "RiskLevel=$risk  (guardando en historial)")
+        CallHistoryUtils.addEntry(ctx, number ?: "desconocido", risk)
 
-        /* 3) si el usuario desactivó las alertas, salimos aquí --------------- */
-        if (!SettingsManager.areAlertsEnabled(context)) {
-            Log.d("CallReceiver", "Alertas OFF → no se lanza ventana")
-            return                        // ← NO se abre AlertActivity
+        if (!SettingsManager.areAlertsEnabled(ctx)) {
+            Log.d("CallReceiver", "Alertas desactivadas → no UI")
+            return
         }
 
-        /* 4) mostrar la alerta ---------------------------------------------- */
-        val i = Intent(context, AlertActivity::class.java).apply {
+        val intent = Intent(ctx, AlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             putExtra("PHONE_NUMBER", number)
             putExtra("CONTACT_NAME", contactName ?: "Desconocido")
             putExtra("RISK_LEVEL",   risk)
         }
-        context.startActivity(i)
+        Log.d("CallReceiver", "startActivity(AlertActivity)")
+        ctx.startActivity(intent)
     }
 
-
-
-    private fun getContactName(context: Context?, phoneNumber: String): String? {
+    /* ────────── Nombre de contacto ────────── */
+    private fun getContactName(context: Context?, number: String): String? {
         context ?: return null
-
-        val contentResolver = context.contentResolver
         val uri = ContactsContract.PhoneLookup.CONTENT_FILTER_URI.buildUpon()
-            .appendPath(phoneNumber)
-            .build()
+            .appendPath(number).build()
 
-        val cursor = contentResolver.query(
+        context.contentResolver.query(
             uri,
             arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME),
-            null,
-            null,
-            null
-        )
-
-        cursor?.use {
-            if (it.moveToFirst()) {
-                return it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+            null, null, null
+        )?.use { c ->
+            if (c.moveToFirst()) {
+                val name = c.getString(0)
+                Log.d("CallReceiver", "Contacto encontrado: $name")
+                return name
             }
         }
-
+        Log.d("CallReceiver", "Sin contacto para $number")
         return null
     }
 }

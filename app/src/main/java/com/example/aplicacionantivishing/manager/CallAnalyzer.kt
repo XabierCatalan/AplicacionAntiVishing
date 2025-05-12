@@ -9,6 +9,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import com.example.aplicacionantivishing.R
 import android.telephony.TelephonyManager
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 object CallAnalyzer {
 
@@ -187,26 +189,41 @@ object CallAnalyzer {
         }
     }
 
+    // CallAnalyzer.kt  (sólo este método)
     private fun isNumberReportedInOsint(context: Context, phoneNumber: String): Boolean {
 
-        // Llamada al método que limpia el prefijo
         val cleanNumber = cleanInternationalPrefix(context, phoneNumber)
-
         Log.d("CallAnalyzer", "Número limpio para OSINT: $cleanNumber")
 
         return runBlocking {
-            if (OsintChecker.isReportedInTeledigo(cleanNumber)) {
-                Log.d("CallAnalyzer", "Número encontrado en Teledigo")
-                true
-            } else if (OsintChecker.isReportedInListaSpam(cleanNumber)) {
-                Log.d("CallAnalyzer", "Número encontrado en ListaSpam")
-                true
-            } else {
-                Log.d("CallAnalyzer", "Número NO encontrado en OSINT")
-                false
+
+            coroutineScope {
+                // 1️⃣ lanzamos las dos peticiones al mismo tiempo
+                val teledigo  = async { OsintChecker.isReportedInTeledigo(cleanNumber) }
+                val listaSpam = async { OsintChecker.isReportedInListaSpam(cleanNumber) }
+
+                // 2️⃣ esperamos los resultados
+                val reportedInTeledigo  = teledigo.await()
+                val reportedInListaSpam = listaSpam.await()
+
+                when {
+                    reportedInTeledigo -> {
+                        Log.d("CallAnalyzer", "Número encontrado en Teledigo")
+                        true
+                    }
+                    reportedInListaSpam -> {
+                        Log.d("CallAnalyzer", "Número encontrado en ListaSpam")
+                        true
+                    }
+                    else -> {
+                        Log.d("CallAnalyzer", "Número NO encontrado en OSINT")
+                        false
+                    }
+                }
             }
         }
     }
+
 
 
 

@@ -132,6 +132,8 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_CONTACTS
 
+
+
         if (needed.isNotEmpty())
             ActivityCompat.requestPermissions(this,
                 needed.toTypedArray(), PERMISSION_REQUEST_CODE)

@@ -10,6 +10,7 @@ import com.example.aplicacionantivishing.R
 class AlertActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         window.addFlags(
