@@ -103,4 +103,11 @@ object SettingsManager {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         return prefs.getString("penalty_osint", DEFAULT_OSINT_PENALTY)!!.toInt()
     }
+
+    // SettingsManager.kt
+    fun areAlertsEnabled(context: Context): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return prefs.getBoolean("show_alert", true)
+    }
+
 }

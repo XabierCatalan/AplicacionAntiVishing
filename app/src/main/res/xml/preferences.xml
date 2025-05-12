@@ -1,66 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Listas de Prefijos">
-        <EditTextPreference
-            android:key="blacklist_prefixes"
-            android:title="Prefijos en Lista Negra"
-            android:summary="Edita prefijos separados por comas (ej: +373,+91)" />
+    <!-- ─────────── LISTAS DE PREFIJOS ─────────── -->
+    <PreferenceCategory
+        android:key="prefix_lists"
+        android:title="Listas de Prefijos (selección rápida)">
 
-        <EditTextPreference
-            android:key="whitelist_prefixes"
-            android:title="Prefijos en Lista Blanca"
-            android:summary="Edita prefijos separados por comas (ej: +44,+39)" />
+        <!-- Se rellenan dinámicamente en SettingsFragment:
+             ─ blacklist_prefixes
+             ─ whitelist_prefixes -->
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Pesos del Algoritmo">
-        <EditTextPreference
-            android:key="penalty_suspicious_name"
-            android:title="Penalización por Nombre Sospechoso"
-            android:summary="Valor negativo (-70 por defecto)" />
+    <!-- ─────────── CON INTERNET ─────────── -->
+    <PreferenceCategory android:title="Penalizaciones y Bonificaciones (Con Internet)">
 
         <EditTextPreference
-            android:key="penalty_osint_report"
-            android:title="Penalización por Reporte OSINT"
-            android:summary="Valor negativo (-50 por defecto)" />
+            android:key="penalty_suspicious_name"
+            android:title="Penalización · Nombre sospechoso"
+            android:summary="Valor negativo (−70 por defecto)" />
 
         <EditTextPreference
             android:key="penalty_international_call"
-            android:title="Penalización por Llamada Internacional no reconocida"
-            android:summary="Valor negativo (-30 por defecto)" />
+            android:title="Penalización · Llamada internacional"
+            android:summary="Valor negativo (−30 por defecto)" />
 
         <EditTextPreference
             android:key="penalty_first_call"
-            android:title="Penalización por Primera Llamada"
-            android:summary="Valor negativo (-10 por defecto)" />
+            android:title="Penalización · Primera llamada"
+            android:summary="Valor negativo (−10 por defecto)" />
 
         <EditTextPreference
-            android:key="bonus_verified_contact"
-            android:title="Bonus por Verificación en Contactos"
+            android:key="penalty_not_saved_contact"
+            android:title="Penalización · No está en contactos"
+            android:summary="Valor negativo (−10 por defecto)" />
+
+        <EditTextPreference
+            android:key="bonus_saved_contact"
+            android:title="Bonificación · Está en contactos"
             android:summary="Valor positivo (+10 por defecto)" />
 
         <EditTextPreference
             android:key="bonus_national_call"
-            android:title="Bonus por Llamada Nacional"
+            android:title="Bonificación · Llamada nacional"
             android:summary="Valor positivo (+5 por defecto)" />
+
+        <EditTextPreference
+            android:key="blacklist_penalty"
+            android:title="Penalización · Prefijo en Blacklist"
+            android:summary="Valor negativo (−90 por defecto)" />
+
+        <EditTextPreference
+            android:key="penalty_osint"
+            android:title="Penalización · Reportado en OSINT"
+            android:summary="Valor negativo (−50 por defecto – solo con Internet)" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Preferencias de Análisis">
-        <SwitchPreference
-            android:key="show_alert"
-            android:title="Mostrar Alerta en Pantalla"
-            android:summary="Si desactivas, solo se analizará la llamada"
-            android:defaultValue="true" />
+    <!-- ─────────── SIN INTERNET ─────────── -->
+    <PreferenceCategory android:title="Penalizaciones y Bonificaciones (Sin Internet)">
+
+        <EditTextPreference
+            android:key="penalty_suspicious_name_no_internet"
+            android:title="Penalización · Nombre sospechoso (offline)"
+            android:summary="Valor negativo (−80 por defecto)" />
+
+        <EditTextPreference
+            android:key="penalty_international_call_no_internet"
+            android:title="Penalización · Llamada internacional (offline)"
+            android:summary="Valor negativo (−40 por defecto)" />
+
+        <EditTextPreference
+            android:key="penalty_first_call_no_internet"
+            android:title="Penalización · Primera llamada (offline)"
+            android:summary="Valor negativo (−20 por defecto)" />
+
+        <EditTextPreference
+            android:key="penalty_not_saved_contact_no_internet"
+            android:title="Penalización · No está en contactos (offline)"
+            android:summary="Valor negativo (−20 por defecto)" />
+
+        <EditTextPreference
+            android:key="bonus_saved_contact_no_internet"
+            android:title="Bonificación · Está en contactos (offline)"
+            android:summary="Valor positivo (+20 por defecto)" />
+
+        <EditTextPreference
+            android:key="bonus_national_call_no_internet"
+            android:title="Bonificación · Llamada nacional (offline)"
+            android:summary="Valor positivo (+15 por defecto)" />
+    </PreferenceCategory>
+
+    <!-- ─────────── PREFERENCIAS DE INTERFAZ ─────────── -->
+    <PreferenceCategory android:title="Preferencias de Interfaz">
 
         <SwitchPreference
-            android:key="verify_with_internet"
-            android:title="Verificar solo con Internet"
-            android:summary="Si está activo, solo se verificará OSINT si hay conexión"
+            android:key="show_alert"
+            android:title="Mostrar alertas emergentes"
+            android:summary="Si se desactiva, el análisis seguirá funcionando sin pop-ups"
             android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <!-- ─────────── UTILIDADES ─────────── -->
+    <PreferenceCategory android:title="Utilidades">
 
         <Preference
             android:key="reset_values"
             android:title="Restablecer valores por defecto"
-            android:summary="Volver a los valores originales del algoritmo" />
+            android:summary="Vuelve a las penalizaciones y bonificaciones originales" />
     </PreferenceCategory>
 
 </PreferenceScreen>

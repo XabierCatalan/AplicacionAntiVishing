@@ -9,6 +9,7 @@ import android.os.Handler
 import android.provider.ContactsContract
 import android.util.Log
 import com.example.aplicacionantivishing.manager.CallAnalyzer
+import com.example.aplicacionantivishing.manager.SettingsManager
 import com.example.aplicacionantivishing.ui.AlertActivity
 
 class CallReceiver : BroadcastReceiver() {
@@ -113,33 +114,39 @@ class CallReceiver : BroadcastReceiver() {
         editor.apply()
     }
 
-    private fun launchAlert(context: Context, incomingNumber: String?, contactName: String?) {
-
+    private fun launchAlert(
+        context: Context,
+        incomingNumber: String?,
+        contactName:    String?
+    ) {
         alertLaunched = true
 
-        val formattedNumber = if (incomingNumber != null && !incomingNumber.startsWith("+")) {
-            Log.d("CallReceiver", "Prefijo puesto: +34$incomingNumber")
+        /* 1) normaliza número ------------------------------------------------ */
+        val number = if (incomingNumber != null && !incomingNumber.startsWith("+"))
             "+34$incomingNumber"
-        } else {
-            Log.d("CallReceiver", "Número ya tiene prefijo o es nulo: $incomingNumber")
-            incomingNumber
+        else incomingNumber
+
+        /* 2) analiza y guarda ------------------------------------------------ */
+        val risk = CallAnalyzer.analyzeNumber(context, number, contactName)
+        saveCallToHistory(context, number ?: "desconocido", risk)
+
+        /* 3) si el usuario desactivó las alertas, salimos aquí --------------- */
+        if (!SettingsManager.areAlertsEnabled(context)) {
+            Log.d("CallReceiver", "Alertas OFF → no se lanza ventana")
+            return                        // ← NO se abre AlertActivity
         }
 
-        val riskLevel = CallAnalyzer.analyzeNumber(context, formattedNumber, contactName)
-
-        saveCallToHistory(context, incomingNumber ?: "Número desconocido", riskLevel)
-
-        val intent = Intent(context, AlertActivity::class.java).apply {
+        /* 4) mostrar la alerta ---------------------------------------------- */
+        val i = Intent(context, AlertActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra("PHONE_NUMBER", incomingNumber ?: "Número desconocido")
+            putExtra("PHONE_NUMBER", number)
             putExtra("CONTACT_NAME", contactName ?: "Desconocido")
-            putExtra("RISK_LEVEL", riskLevel)
-
+            putExtra("RISK_LEVEL",   risk)
         }
-        context.startActivity(intent)
-
-        Log.d("CallReceiver", "AlertActivity lanzada con RISK_LEVEL: $riskLevel, número: ${incomingNumber ?: "Número desconocido"}, nombre: ${contactName ?: "Desconocido"}")
+        context.startActivity(i)
     }
+
+
 
     private fun getContactName(context: Context?, phoneNumber: String): String? {
         context ?: return null
