@@ -106,7 +106,7 @@ object CallAnalyzer {
         }
         if (contactNameIsSuspicious(contactName)) {
             confidence += penaltySuspiciousName
-            Log.d("CallAnalyzer", "Nombre sospechoso ➔ -$penaltySuspiciousName ➔ Confianza ahora: $confidence%")
+            Log.d("CallAnalyzer", "Nombre sospechoso ➔ $penaltySuspiciousName ➔ Confianza ahora: $confidence%")
         }
 
         //if (hasInternet && isNumberReportedInOsint(context, phoneNumber)) {
@@ -158,8 +158,7 @@ object CallAnalyzer {
         Log.d("CallAnalyzer", "Confianza final: $confidence%")
 
         return when {
-            confidence < 30 -> "dangerous"
-            confidence in 30..69 -> "suspicious"
+            confidence < 70 -> "dangerous"
             else -> "safe"
         }
     }

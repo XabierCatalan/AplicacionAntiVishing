@@ -1,4 +1,4 @@
-package com.example.aplicacionantivishing.ui
+package com.example.aplicacionantivishing.ui          // ⬅️ ajústalo a tu paquete
 
 import android.Manifest
 import android.content.Context
@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,16 +18,17 @@ import com.example.aplicacionantivishing.adapter.CallHistoryAdapter
 import com.example.aplicacionantivishing.adapter.CallHistoryEntry
 import com.example.aplicacionantivishing.manager.CallAnalyzer
 
+import com.example.aplicacionantivishing.manager.SettingsManager
+
 class MainActivity : AppCompatActivity() {
 
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 1001
-    }
+    companion object { private const val PERMISSION_REQUEST_CODE = 1001 }
 
     private lateinit var recyclerViewHistory: RecyclerView
     private lateinit var callHistoryAdapter: CallHistoryAdapter
     private val callHistoryList = mutableListOf<CallHistoryEntry>()
 
+    /* ───────────────────────── LIFE-CYCLE ───────────────────────── */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -38,103 +40,110 @@ class MainActivity : AppCompatActivity() {
         callHistoryAdapter = CallHistoryAdapter(callHistoryList)
         recyclerViewHistory.adapter = callHistoryAdapter
 
-        val buttonSettings = findViewById<Button>(R.id.button_open_settings)
-        buttonSettings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+        // Botón Ajustes
+        findViewById<Button>(R.id.button_open_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        // Botón Simular llamada: SIEMPRE visible
+        findViewById<Button>(R.id.button_simulate_call).setOnClickListener {
+            simulateReportedIncomingCall()
+        }
+    }
+
+    /** Al volver a primer plano refrescamos el historial */
+    override fun onResume() {
+        super.onResume()
         cargarHistorial()
-        simulateReportedIncomingCall()
-
     }
 
-    private fun simulateReportedIncomingCall() {
-        val fakePhoneNumber: String = "+31646036429" // 📱 Aquí pon un número que sepamos que esté reportado en Teledigo o ListaSpam
-        val fakeContactName: String? = null // 👤 No está en agenda
-
-        // Analizamos como si fuese una llamada real
-        val riskLevel = CallAnalyzer.analyzeNumber(this, fakePhoneNumber, fakeContactName)
-
-        val sharedPrefs = getSharedPreferences("call_history", Context.MODE_PRIVATE)
-        val editor = sharedPrefs.edit()
-        val existingHistory = sharedPrefs.getStringSet("history", mutableSetOf()) ?: mutableSetOf()
-
-        val timestamp = System.currentTimeMillis()
-        val newEntry = "$timestamp|$fakePhoneNumber|$riskLevel"
-
-        existingHistory.add(newEntry)
-
-        editor.putStringSet("history", existingHistory)
-        editor.apply()
-
-        val intent = Intent(this, AlertActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra("PHONE_NUMBER", fakePhoneNumber)
-            putExtra("CONTACT_NAME", fakeContactName ?: "Desconocido")
-            putExtra("RISK_LEVEL", riskLevel)
-        }
-        startActivity(intent)
-
-        Log.d("MainActivity", "Simulación de llamada de número reportado: $fakePhoneNumber ➔ Nivel: $riskLevel")
-    }
-
-
+    /* ───────────────────────── HISTORIAL ───────────────────────── */
     private fun cargarHistorial() {
         callHistoryList.clear()
 
-        val sharedPrefs = getSharedPreferences("call_history", Context.MODE_PRIVATE)
-        val historySet = sharedPrefs.getStringSet("history", emptySet()) ?: emptySet()
+        val prefs = getSharedPreferences("call_history", Context.MODE_PRIVATE)
+        val history = prefs.getStringSet("history", emptySet()) ?: emptySet()
 
-        for (entry in historySet) {
-            val parts = entry.split("|")
-            if (parts.size == 3) {
-                val phoneNumber = parts[1]
-                val riskLevel = parts[2]
-                callHistoryList.add(CallHistoryEntry(phoneNumber, riskLevel))
+        // ordenar por timestamp descendente (lo más reciente arriba)
+        history.sortedByDescending { it.substringBefore('|').toLong() }
+            .forEach { entry ->
+                val parts = entry.split("|")
+                if (parts.size == 3) {
+                    val number = parts[1]
+                    val risk   = parts[2]
+                    val display = lookupContactName(this, number) ?: number
+                    callHistoryList.add(CallHistoryEntry(display, risk))
+                }
             }
-        }
 
         callHistoryAdapter.notifyDataSetChanged()
     }
 
+    /** Busca el nombre del contacto; devuelve null si no existe. */
+    private fun lookupContactName(ctx: Context, number: String): String? {
+        val uri = android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI
+            .buildUpon().appendPath(number).build()
+
+        ctx.contentResolver.query(
+            uri,
+            arrayOf(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME),
+            null, null, null
+        )?.use { c ->
+            if (c.moveToFirst()) return c.getString(0)
+        }
+        return null
+    }
+
+    /* ───────────────────────── SIMULACIÓN ───────────────────────── */
+    private fun simulateReportedIncomingCall() {
+        val fakeNumber = "+34682865557"      // número de prueba
+        val riskLevel  = CallAnalyzer.analyzeNumber(this, fakeNumber, "Spam Ander")
+
+        saveCallToHistory(fakeNumber, riskLevel)
+        startActivity(
+            Intent(this, AlertActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                putExtra("PHONE_NUMBER", fakeNumber)
+                putExtra("CONTACT_NAME", "Desconocido")
+                putExtra("RISK_LEVEL",   riskLevel)
+            }
+        )
+
+        Toast.makeText(this, "Llamada simulada añadida", Toast.LENGTH_SHORT).show()
+        Log.d("MainActivity","Simulada llamada $fakeNumber risk=$riskLevel")
+    }
+
+    /** Guarda una entrada en SharedPreferences */
+    private fun saveCallToHistory(number: String, risk: String) {
+        val prefs = getSharedPreferences("call_history", Context.MODE_PRIVATE)
+        val set   = prefs.getStringSet("history", mutableSetOf())!!.toMutableSet()
+        set.add("${System.currentTimeMillis()}|$number|$risk")
+        prefs.edit().putStringSet("history", set).apply()
+    }
+
+    /* ─────────────────────── PERMISOS RUN-TIME ─────────────────────── */
     private fun checkAndRequestPermissions() {
-        val permissionsNeeded = mutableListOf<String>()
+        val needed = mutableListOf<String>()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-            != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
-        }
-
+            != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_PHONE_STATE
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG)
-            != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(Manifest.permission.READ_CALL_LOG)
-        }
-
+            != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_CALL_LOG
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-            != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(Manifest.permission.READ_CONTACTS)
-        }
+            != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_CONTACTS
 
-        if (permissionsNeeded.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsNeeded.toTypedArray(), PERMISSION_REQUEST_CODE)
-        }
+        if (needed.isNotEmpty())
+            ActivityCompat.requestPermissions(this,
+                needed.toTypedArray(), PERMISSION_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        code: Int, perms: Array<out String>, results: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            // Aquí podrías verificar si todos los permisos fueron concedidos
-            for (result in grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    // Podrías notificar al usuario si quieres
-                }
-            }
-        }
+        super.onRequestPermissionsResult(code, perms, results)
+        if (code == PERMISSION_REQUEST_CODE && results.any { it != PackageManager.PERMISSION_GRANTED })
+            Toast.makeText(this,
+                "La app puede funcionar limitado sin todos los permisos.",
+                Toast.LENGTH_SHORT).show()
     }
 }

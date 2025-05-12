@@ -34,10 +34,6 @@ class AlertActivity : AppCompatActivity() {
                 layout.setBackgroundColor(resources.getColor(R.color.safeGreen, null))
                 textView.text = "Número seguro:\n$incomingNumber"
             }
-            "suspicious" -> {
-                layout.setBackgroundColor(resources.getColor(R.color.suspiciousYellow, null))
-                textView.text = "Número sospechoso:\n$incomingNumber"
-            }
             "dangerous" -> {
                 layout.setBackgroundColor(resources.getColor(R.color.dangerRed, null))
                 textView.text = "¡PELIGRO DE ESTAFA!\n$incomingNumber"
