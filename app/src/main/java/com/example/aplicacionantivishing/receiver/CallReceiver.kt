@@ -117,8 +117,15 @@ class CallReceiver : BroadcastReceiver() {
 
         alertLaunched = true
 
+        val formattedNumber = if (incomingNumber != null && !incomingNumber.startsWith("+")) {
+            Log.d("CallReceiver", "Prefijo puesto: +34$incomingNumber")
+            "+34$incomingNumber"
+        } else {
+            Log.d("CallReceiver", "Número ya tiene prefijo o es nulo: $incomingNumber")
+            incomingNumber
+        }
 
-        val riskLevel = CallAnalyzer.analyzeNumber(context, incomingNumber, contactName)
+        val riskLevel = CallAnalyzer.analyzeNumber(context, formattedNumber, contactName)
 
         saveCallToHistory(context, incomingNumber ?: "Número desconocido", riskLevel)
 

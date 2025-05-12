@@ -5,10 +5,82 @@ import android.preference.PreferenceManager
 import android.util.Log
 import com.example.aplicacionantivishing.network.OsintChecker
 import kotlinx.coroutines.runBlocking
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import com.example.aplicacionantivishing.R
+import android.telephony.TelephonyManager
 
 object CallAnalyzer {
 
+    private var nationalPrefix: String? = null
+
+    fun loadSimPrefix(context: Context) {
+        if (nationalPrefix != null) return
+
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val simCountryIso = telephonyManager.simCountryIso.uppercase()
+
+        try {
+            val inputStream = context.resources.openRawResource(R.raw.paises)
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            reader.useLines { lines ->
+                lines.drop(1).forEach { line ->
+                    val parts = line.split(";")
+                    if (parts.size >= 4) {
+                        val countryIso = parts[1].trim().uppercase()
+                        if (countryIso == simCountryIso) {
+                            nationalPrefix = "+" + parts[3].trim()
+                            return@forEach
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CallUtils", "Error al cargar los prefijos: ${e.message}")
+        }
+    }
+
+    fun getNationalPrefix(): String? = nationalPrefix
+
+    fun clearSimPrefix() {
+        nationalPrefix = null
+        Log.d("CallUtils", "Prefijo nacional eliminado de memoria.")
+    }
+
+    fun cleanInternationalPrefix(context: Context, phoneNumber: String): String {
+        var cleanNumber = phoneNumber
+
+        try {
+            val inputStream = context.resources.openRawResource(R.raw.paises)
+            val reader = BufferedReader(InputStreamReader(inputStream))
+
+            reader.useLines { lines ->
+                lines.drop(1).forEach { line ->
+                    val parts = line.split(";")
+                    if (parts.size >= 4) {
+                        val prefix = "+" + parts[3].trim()
+
+                        // Si el número empieza por este prefijo, lo quitamos y paramos la búsqueda
+                        if (phoneNumber.startsWith(prefix)) {
+                            cleanNumber = phoneNumber.removePrefix(prefix)
+                            Log.d("CallAnalyzer", "Prefijo $prefix detectado y eliminado → Número limpio: $cleanNumber")
+                            return cleanNumber
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CallAnalyzer", "Error al cargar los prefijos: ${e.message}")
+        }
+
+        Log.d("CallAnalyzer", "No se detectó prefijo internacional en: $phoneNumber")
+        return cleanNumber
+    }
+
     fun analyzeNumber(context: Context, phoneNumber: String?, contactName: String?): String {
+
+
+        loadSimPrefix(context)
         if (phoneNumber.isNullOrEmpty()) {
             Log.d("CallAnalyzer", "Número oculto detectado → Confianza = 0%")
             return "dangerous"
@@ -19,6 +91,12 @@ object CallAnalyzer {
 
         val hasInternet = InternetManager.isInternetAvailable(context)
 
+        val penaltySuspiciousName = SettingsManager.getPenaltySuspiciousName(context, hasInternet)
+        val penaltyInternational = SettingsManager.getPenaltyInternationalCall(context, hasInternet)
+        val penaltyFirstCall = SettingsManager.getPenaltyFirstCall(context, hasInternet)
+        val bonusVerifiedContact = SettingsManager.getBonusVerifiedContact(context, hasInternet)
+        val bonusNationalCall = SettingsManager.getBonusNationalCall(context, hasInternet)
+
         if (isPrefixInBlacklist(context, phoneNumber)) {
             confidence -= 90
             Log.d("CallAnalyzer", "Prefijo en blacklist ➔ -90 ➔ Confianza ahora: $confidence%")
@@ -28,7 +106,7 @@ object CallAnalyzer {
             confidence -= penalty
             Log.d("CallAnalyzer", "Nombre sospechoso ➔ -$penalty ➔ Confianza ahora: $confidence%")
         }
-        if (hasInternet && isNumberReportedInOsint(phoneNumber)) {
+        if (hasInternet && isNumberReportedInOsint(context, phoneNumber)) {
             confidence -= 50
             Log.d("CallAnalyzer", "Número reportado en OSINT ➔ -50 ➔ Confianza ahora: $confidence%")
         }
@@ -57,10 +135,12 @@ object CallAnalyzer {
             Log.d("CallAnalyzer", "Primera vez que llama ➔ -$penalty ➔ Confianza ahora: $confidence%")
         }
 
-        if (isNationalPrefix(phoneNumber)) {
+        if (isNationalPrefix(context, phoneNumber)) {
             confidence += 5
             Log.d("CallAnalyzer", "Prefijo nacional ➔ +5 ➔ Confianza ahora: $confidence%")
         }
+
+        clearSimPrefix()
 
         if (confidence > 100) confidence = 100
         if (confidence < 0) confidence = 0
@@ -100,12 +180,18 @@ object CallAnalyzer {
         }
     }
 
-    private fun isNumberReportedInOsint(phoneNumber: String): Boolean {
+    private fun isNumberReportedInOsint(context: Context, phoneNumber: String): Boolean {
+
+        // Llamada al método que limpia el prefijo
+        val cleanNumber = cleanInternationalPrefix(context, phoneNumber)
+
+        Log.d("CallAnalyzer", "Número limpio para OSINT: $cleanNumber")
+
         return runBlocking {
-            if (OsintChecker.isReportedInTeledigo(phoneNumber)) {
+            if (OsintChecker.isReportedInTeledigo(cleanNumber)) {
                 Log.d("CallAnalyzer", "Número encontrado en Teledigo")
                 true
-            } else if (OsintChecker.isReportedInListaSpam(phoneNumber)) {
+            } else if (OsintChecker.isReportedInListaSpam(cleanNumber)) {
                 Log.d("CallAnalyzer", "Número encontrado en ListaSpam")
                 true
             } else {
@@ -142,9 +228,10 @@ object CallAnalyzer {
 
 
     private fun isInternationalCall(phoneNumber: String): Boolean {
-        val nationalPrefix = "+34" // Asumimos España de momento
-
-        return !phoneNumber.startsWith(nationalPrefix)
+        val prefix = getNationalPrefix()
+        return prefix?.let {
+            !phoneNumber.startsWith(it)
+        } ?: false
     }
 
     private fun isFirstTimeCalling(context: Context, phoneNumber: String): Boolean {
@@ -157,9 +244,11 @@ object CallAnalyzer {
     }
 
 
-    private fun isNationalPrefix(phoneNumber: String): Boolean {
-        val nationalPrefix = "+34"
-
-        return phoneNumber.startsWith(nationalPrefix)
+    private fun isNationalPrefix(context: Context, phoneNumber: String): Boolean {
+        val prefix = getNationalPrefix()
+        return prefix?.let {
+            phoneNumber.startsWith(it)
+        } ?: false
     }
+
 }

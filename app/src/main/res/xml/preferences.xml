@@ -1,7 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="Listas de Prefijos">
-
         <EditTextPreference
             android:key="blacklist_prefixes"
             android:title="Prefijos en Lista Negra"
@@ -13,37 +12,55 @@
             android:summary="Edita prefijos separados por comas (ej: +44,+39)" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Pesos del Algoritmo (Con Internet)">
-
+    <PreferenceCategory android:title="Pesos del Algoritmo">
         <EditTextPreference
-            android:key="weight_suspicious_name_internet"
+            android:key="penalty_suspicious_name"
             android:title="Penalización por Nombre Sospechoso"
             android:summary="Valor negativo (-70 por defecto)" />
 
         <EditTextPreference
-            android:key="weight_reported_internet"
+            android:key="penalty_osint_report"
             android:title="Penalización por Reporte OSINT"
             android:summary="Valor negativo (-50 por defecto)" />
 
         <EditTextPreference
-            android:key="weight_verified_internet"
-            android:title="Bonus por Verificación OSINT"
-            android:summary="Valor positivo (+15 por defecto)" />
+            android:key="penalty_international_call"
+            android:title="Penalización por Llamada Internacional no reconocida"
+            android:summary="Valor negativo (-30 por defecto)" />
 
-        <!-- Más pesos aquí si quieres (internacional, contactos, etc) -->
+        <EditTextPreference
+            android:key="penalty_first_call"
+            android:title="Penalización por Primera Llamada"
+            android:summary="Valor negativo (-10 por defecto)" />
+
+        <EditTextPreference
+            android:key="bonus_verified_contact"
+            android:title="Bonus por Verificación en Contactos"
+            android:summary="Valor positivo (+10 por defecto)" />
+
+        <EditTextPreference
+            android:key="bonus_national_call"
+            android:title="Bonus por Llamada Nacional"
+            android:summary="Valor positivo (+5 por defecto)" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Otros Ajustes">
-
-        <SwitchPreferenceCompat
+    <PreferenceCategory android:title="Preferencias de Análisis">
+        <SwitchPreference
             android:key="show_alert"
-            android:title="Mostrar alerta en pantalla"
-            android:summary="Si desactivas, solo se analizará la llamada" />
+            android:title="Mostrar Alerta en Pantalla"
+            android:summary="Si desactivas, solo se analizará la llamada"
+            android:defaultValue="true" />
+
+        <SwitchPreference
+            android:key="verify_with_internet"
+            android:title="Verificar solo con Internet"
+            android:summary="Si está activo, solo se verificará OSINT si hay conexión"
+            android:defaultValue="true" />
 
         <Preference
-            android:key="reset_weights"
-            android:title="Restaurar pesos por defecto"
-            android:summary="Volver a valores originales del algoritmo" />
+            android:key="reset_values"
+            android:title="Restablecer valores por defecto"
+            android:summary="Volver a los valores originales del algoritmo" />
     </PreferenceCategory>
 
 </PreferenceScreen>

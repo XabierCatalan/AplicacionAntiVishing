@@ -1,0 +1,246 @@
+nombre; iso2; iso3; phone_code
+Curazao;CW;CWU;5999
+Jamaica;JM;JAM;1876
+San Cristobal y Nieves;KN;KNA;1869
+Trinidad y Tobago;TT;TTO;1868
+Republica Dominicana;DO;DOM;1809
+San Vicente y las Granadinas;VC;VCT;1784
+Dominica;DM;DMA;1767
+Santa Lucia;LC;LCA;1758
+Sint Maarten;SX;SMX;1721
+Samoa Americana;AS;ASM;1684
+Guam;GU;GUM;1671
+Islas Marianas del Norte;MP;MNP;1670
+Montserrat;MS;MSR;1664
+Islas Turcas y Caicos;TC;TCA;1649
+San Martin (Francia);MF;MAF;1599
+Granada;GD;GRD;1473
+Islas Bermudas;BM;BMU;1441
+Islas Caiman;KY;CYM;1345
+Islas Virgenes de los Estados Unidos;VI;VIR;1340
+Islas Virgenes Britanicas;VG;VGB;1284
+Antigua y Barbuda;AG;ATG;1268
+Anguila;AI;AIA;1264
+Barbados;BB;BRB;1246
+Bahamas;BS;BHS;1242
+Uzbekistan;UZ;UZB;998
+Kirguistan;KG;KGZ;996
+Georgia;GE;GEO;995
+Azerbaiyan;AZ;AZE;994
+Turkmenistan;TM;TKM;993
+Tayikistan;TJ;TJK;992
+Nepal;NP;NPL;977
+Mongolia;MN;MNG;976
+Bhutan;BT;BTN;975
+Qatar;QA;QAT;974
+Bahrein;BH;BHR;973
+Israel;IL;ISR;972
+Emiratos Arabes Unidos;AE;ARE;971
+Palestina;PS;PSE;970
+Oman;OM;OMN;968
+Yemen;YE;YEM;967
+Arabia Saudita;SA;SAU;966
+Kuwait;KW;KWT;965
+Irak;IQ;IRQ;964
+Siria;SY;SYR;963
+Jordania;JO;JOR;962
+Libano;LB;LBN;961
+Islas Maldivas;MV;MDV;960
+Taiwan;TW;TWN;886
+Bangladesh;BD;BGD;880
+Islas Pitcairn;PN;PCN;870
+Laos;LA;LAO;856
+Camboya;KH;KHM;855
+Macao;MO;MAC;853
+Hong kong;HK;HKG;852
+Corea del Norte;KP;PRK;850
+Islas Marshall;MH;MHL;692
+Micronesia;FM;FSM;691
+Tokelau;TK;TKL;690
+Polinesia Francesa;PF;PYF;689
+Tuvalu;TV;TUV;688
+Nueva Caledonia;NC;NCL;687
+Kiribati;KI;KIR;686
+Samoa;WS;WSM;685
+Niue;NU;NIU;683
+Islas Cook;CK;COK;682
+Wallis y Futuna;WF;WLF;681
+Palau;PW;PLW;680
+Fiyi;FJ;FJI;679
+Vanuatu;VU;VUT;678
+Islas Salomon;SB;SLB;677
+Tonga;TO;TON;676
+Papua Nueva Guinea;PG;PNG;675
+Nauru;NR;NRU;674
+Brunei;BN;BRN;673
+Antartida;AQ;ATA;672
+Isla Norfolk;NF;NFK;672
+Timor Oriental;TL;TLS;670
+Uruguay;UY;URY;598
+Surinam;SR;SUR;597
+Martinica;MQ;MTQ;596
+Paraguay;PY;PRY;595
+Guayana Francesa;GF;GUF;594
+Ecuador;EC;ECU;593
+Guyana;GY;GUY;592
+Bolivia;BO;BOL;591
+Guadalupe;GP;GLP;590
+San Bartolome;BL;BLM;590
+Haiti;HT;HTI;509
+San Pedro y Miquelon;PM;SPM;508
+Panama;PA;PAN;507
+Costa Rica;CR;CRI;506
+Nicaragua;NI;NIC;505
+Honduras;HN;HND;504
+El Salvador;SV;SLV;503
+Guatemala;GT;GTM;502
+Belice;BZ;BLZ;501
+Islas Georgias del Sur y Sandwich del Sur;GS;SGS;500
+Islas Malvinas;FK;FLK;500
+Liechtenstein;LI;LIE;423
+Eslovaquia;SK;SVK;421
+Republica Checa;CZ;CZE;420
+Macedonia;MK;MKD;389
+Bosnia y Herzegovina;BA;BIH;387
+Eslovenia;SI;SVN;386
+Croacia;HR;HRV;385
+Montenegro;ME;MNE;382
+Serbia;RS;SRB;381
+Ucrania;UA;UKR;380
+San Marino;SM;SMR;378
+Monaco;MC;MCO;377
+Andorra;AD;AND;376
+Bielorrusia;BY;BLR;375
+Armenia;AM;ARM;374
+Moldavia;MD;MDA;373
+Estonia;EE;EST;372
+Letonia;LV;LVA;371
+Lituania;LT;LTU;370
+Bulgaria;BG;BGR;359
+Finlandia;FI;FIN;358
+Islas de Aland;AX;ALA;358
+Chipre;CY;CYP;357
+Malta;MT;MLT;356
+Albania;AL;ALB;355
+Islandia;IS;ISL;354
+Irlanda;IE;IRL;353
+Luxemburgo;LU;LUX;352
+Portugal;PT;PRT;351
+Gibraltar;GI;GIB;350
+Groenlandia;GL;GRL;299
+Islas Feroe;FO;FRO;298
+Aruba;AW;ABW;297
+Eritrea;ER;ERI;291
+Santa Elena;SH;SHN;290
+Comoras;KM;COM;269
+Swazilandia;SZ;SWZ;268
+Botsuana;BW;BWA;267
+Lesoto;LS;LSO;266
+Malawi;MW;MWI;265
+Namibia;;NAM;264
+Zimbabue;ZW;ZWE;263
+Mayotte;YT;MYT;262
+Reunion;RE;REU;262
+Madagascar;MG;MDG;261
+Zambia;ZM;ZMB;260
+Mozambique;MZ;MOZ;258
+Burundi;BI;BDI;257
+Uganda;UG;UGA;256
+Tanzania;TZ;TZA;255
+Kenia;KE;KEN;254
+Yibuti;DJ;DJI;253
+Somalia;SO;SOM;252
+Etiopia;ET;ETH;251
+Ruanda;RW;RWA;250
+Sudan;SD;SDN;249
+Seychelles;SC;SYC;248
+Islas Ultramarinas Menores de Estados Unidos;UM;UMI;246
+Territorio Britanico del Oceano Indico;IO;IOT;246
+Guinea-Bissau;GW;GNB;245
+Angola;AO;AGO;244
+Republica Democratica del Congo;CD;COD;243
+Republica del Congo;CG;COG;242
+Gabon;GA;GAB;241
+Guinea Ecuatorial;GQ;GNQ;240
+Santo Tome y Principe;ST;STP;239
+Cabo Verde;CV;CPV;238
+Camerun;CM;CMR;237
+Republica Centroafricana;CF;CAF;236
+Chad;TD;TCD;235
+Nigeria;NG;NGA;234
+Ghana;GH;GHA;233
+Sierra Leona;SL;SLE;232
+Liberia;LR;LBR;231
+Mauricio;MU;MUS;230
+Benin;BJ;BEN;229
+Togo;TG;TGO;228
+Niger;NE;NER;227
+Burkina Faso;BF;BFA;226
+Costa de Marfil;CI;CIV;225
+Guinea;GN;GIN;224
+Mali;ML;MLI;223
+Mauritania;MR;MRT;222
+Senegal;SN;SEN;221
+Gambia;GM;GMB;220
+Libia;LY;LBY;218
+Tunez;TN;TUN;216
+Argelia;DZ;DZA;213
+Marruecos;MA;MAR;212
+Sahara Occidental;EH;ESH;212
+Republica de Sudan del Sur;SS;SSD;211
+Iran;IR;IRN;98
+Birmania;MM;MMR;95
+Sri lanka;LK;LKA;94
+Afganistan;AF;AFG;93
+Pakistan;PK;PAK;92
+India;IN;IND;91
+Turquia;TR;TUR;90
+China;CN;CHN;86
+Vietnam;VN;VNM;84
+Corea del Sur;KR;KOR;82
+Japon;JP;JPN;81
+Tailandia;TH;THA;66
+Singapur;SG;SGP;65
+Nueva Zelanda;NZ;NZL;64
+Filipinas;PH;PHL;63
+Indonesia;ID;IDN;62
+Australia;AU;AUS;61
+Isla de Navidad;CX;CXR;61
+Islas Cocos (Keeling);CC;CCK;61
+Malasia;MY;MYS;60
+Venezuela;VE;VEN;58
+Colombia;CO;COL;57
+Chile;CL;CHL;56
+Brasil;BR;BRA;55
+Argentina;AR;ARG;54
+Cuba;CU;CUB;53
+Mexico;MX;MEX;52
+Peru;PE;PER;51
+Alemania;DE;DEU;49
+Polonia;PL;POL;48
+Noruega;NO;NOR;47
+Svalbard y Jan Mayen;SJ;SJM;47
+Suecia;SE;SWE;46
+Dinamarca;DK;DNK;45
+Guernsey;GG;GGY;44
+Isla de Man;IM;IMN;44
+Jersey;JE;JEY;44
+Reino Unido;GB;GBR;44
+Austria;AT;AUT;43
+Suiza;CH;CHE;41
+Rumania;RO;ROU;40
+Ciudad del Vaticano;VA;VAT;39
+Italia;IT;ITA;39
+Hungria;HU;HUN;36
+Espana;ES;ESP;34
+Francia;FR;FRA;33
+Belgica;BE;BEL;32
+Paises Bajos;NL;NLD;31
+Grecia;GR;GRC;30
+Sudafrica;ZA;ZAF;27
+Egipto;EG;EGY;20
+Kazajistan;KZ;KAZ;7
+Rusia;RU;RUS;7
+Canada;CA;CAN;1
+Estados Unidos de America;US;USA;1
+Puerto Rico;PR;PRI;1
