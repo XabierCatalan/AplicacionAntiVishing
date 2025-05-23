@@ -87,6 +87,8 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE )
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_PHONE_STATE
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS )
+            != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.POST_NOTIFICATIONS
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG  )
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_CALL_LOG
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS )

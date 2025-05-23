@@ -102,9 +102,6 @@ class CallReceiver : BroadcastReceiver() {
 
         /* ─── Lanzar foreground-service que mostrará la Activity ─── */
         val svcIntent = Intent(ctx, AlertService::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
             putExtra("PHONE_NUMBER", number)
             putExtra("CONTACT_NAME", contactName ?: "Desconocido")
             putExtra("RISK_LEVEL",   risk)
