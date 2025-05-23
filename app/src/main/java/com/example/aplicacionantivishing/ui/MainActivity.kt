@@ -18,8 +18,13 @@ import com.example.aplicacionantivishing.adapter.CallHistoryAdapter
 import com.example.aplicacionantivishing.adapter.CallHistoryEntry
 import com.example.aplicacionantivishing.manager.CallAnalyzer
 import com.example.aplicacionantivishing.util.CallHistoryUtils
+import android.provider.Settings
+import android.net.Uri
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
+
+    private val OVERLAY_REQ = 2001
 
     companion object { private const val PERMISSION_REQUEST_CODE = 1001 }
 
@@ -33,6 +38,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         checkAndRequestPermissions()
+
+        if (!Settings.canDrawOverlays(this)) askOverlayPermission()
 
         recyclerViewHistory = findViewById(R.id.recyclerViewHistory)
         recyclerViewHistory.layoutManager = LinearLayoutManager(this)
@@ -81,6 +88,23 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity","Simulada llamada $fakeNumber  risk=$risk")
     }
 
+    private fun askOverlayPermission() {
+        AlertDialog.Builder(this)
+            .setTitle("Permiso de superposición")
+            .setMessage("Necesitamos mostrar una ventana flotante sobre la pantalla "
+                    +"de llamada para avisarte de posibles fraudes.\n\n"
+                    +"Pulsa «Conceder» y activa «Mostrar sobre otras apps».")
+            .setPositiveButton("Conceder") { _, _ ->
+                startActivityForResult(
+                    Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")),
+                    OVERLAY_REQ
+                )
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
     /* ─────────────────────── PERMISOS RUN-TIME ─────────────────────── */
     private fun checkAndRequestPermissions() {
         val needed = mutableListOf<String>()
@@ -89,6 +113,7 @@ class MainActivity : AppCompatActivity() {
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_PHONE_STATE
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS )
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.POST_NOTIFICATIONS
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG  )
             != PackageManager.PERMISSION_GRANTED) needed += Manifest.permission.READ_CALL_LOG
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS )

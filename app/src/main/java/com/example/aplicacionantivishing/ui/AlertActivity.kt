@@ -1,5 +1,6 @@
 package com.example.aplicacionantivishing.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -13,14 +14,14 @@ class AlertActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
-
         setContentView(R.layout.activity_alert)
+
+        if (Build.VERSION.SDK_INT < 27) {
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
+        }
 
         val incomingNumber = intent.getStringExtra("PHONE_NUMBER") ?: "Número desconocido"
         val riskLevel = intent.getStringExtra("RISK_LEVEL") ?: "unknown"

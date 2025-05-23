@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- la burbuja -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="32dp"
+        android:minWidth="320dp"
+        android:minHeight="200dp"
+        android:padding="48dp"
+        app:cardUseCompatPadding="true"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="@android:color/white">
+
+        <TextView
+            android:id="@+id/tvNumber"
+            android:layout_width="match_parent"
+        android:gravity="center"
+            android:layout_marginTop="35dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:text="+34 600 123 456"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/tvMsg"
+            android:layout_marginTop="65dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Llamada segura"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+
+
+    </androidx.cardview.widget.CardView>
+</FrameLayout>
