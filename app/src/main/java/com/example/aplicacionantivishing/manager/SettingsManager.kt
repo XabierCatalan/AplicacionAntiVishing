@@ -109,5 +109,9 @@ object SettingsManager {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         return prefs.getBoolean("show_alert", true)
     }
+    fun getOsintSource(context: Context): String {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return prefs.getString("osint_source", "listaspam") ?: "listaspam"
+    }
 
 }

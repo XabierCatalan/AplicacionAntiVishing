@@ -3,4 +3,12 @@
     <string name="btn_settings">Ajustes</string>
     <string name="btn_simulate_call">Simular llamada</string>
     <string name="history_list">Historial de llamadas</string>
+    <string-array name="osint_sources_labels">
+        <item>Teledigo</item>
+        <item>ListaSpam</item>
+    </string-array>
+    <string-array name="osint_sources_values">
+        <item>teledigo</item>
+        <item>listaspam</item>
+    </string-array>
 </resources>

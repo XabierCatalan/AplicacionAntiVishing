@@ -11,6 +11,18 @@
              ─ whitelist_prefixes -->
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Seleccion Lista de comprobacion de numeros">
+
+    <ListPreference
+        android:key="osint_source"
+        android:title="Fuente OSINT"
+        android:summary="Selecciona la fuente de información OSINT"
+        android:entries="@array/osint_sources_labels"
+        android:entryValues="@array/osint_sources_values"
+        android:defaultValue="listaspam" />
+
+    </PreferenceCategory>
+
     <!-- ─────────── CON INTERNET ─────────── -->
     <PreferenceCategory android:title="Penalizaciones y Bonificaciones (Con Internet)">
 
