@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AplicacionAntiVishing</string>
+    <string name="app_name">VishGuard</string>
     <string name="btn_settings">Ajustes</string>
     <string name="btn_simulate_call">Simular llamada</string>
     <string name="history_list">Historial de llamadas</string>
